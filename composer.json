@@ -1,8 +1,17 @@
 {
   "name": "imyangjin/yii2-mysql-json",
   "description": "extend yii2-ActiceRecord And yii2-ActiveQuery with use mysql json make simple.",
-  "type": "library",
-  "require": {},
+  "keywords": [
+    "yii2",
+    "extension",
+    "mysql",
+    "json",
+    "mysql json"
+  ],
+  "type": "yii2-extension",
+  "require": {
+    "yiisoft/yii2": "~2.0.0"
+  },
   "require-dev": {},
   "autoload": {
     "psr-4": {
