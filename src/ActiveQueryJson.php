@@ -42,10 +42,10 @@ class ActiveQueryJson extends ActiveQuery
     }
 
     /**
-     * 支持 JSON_CONTAINS(target, candidate[, path])查询
-     * 此查询方式和等于查询等效,但不同在于，此查询是包含关系，即字段中包含value的值
+     * Support JSON_CONTAINS(target, candidate[, path]) in query
+     * This query is equivalent to the query, but the difference is that the query is an inclusion relation, that is, the field contains the value of the value
      *
-     * @param string     $column 支持json字段的多级字段，用'.'分割；
+     * @param string     $column A multilevel field supporting JSON fields is segmented using '.'
      *                           example content.lang.en
      * @param string|int $value
      *
@@ -72,5 +72,49 @@ class ActiveQueryJson extends ActiveQuery
         }
 
         return $this;
+    }
+
+    /**
+     * Support JSON_EXTRACT(json_doc, path[, path] ...) in query
+     *
+     * @param string     $column A multilevel field supporting JSON fields is segmented using '.'
+     *                           example content.lang.en
+     * @param string|int $value
+     * @param string     $operate Query Operators，default '='
+     *                            example support : >|>=|<|<=
+     * @return $this
+     * @see https://dev.mysql.com/doc/refman/5.7/en/json-search-functions.html#function_json-extract
+     */
+    public function jsonExtractWhere($column, $value, $operate = '=')
+    {
+        list($cond, $jsonCond) = $this->splitJsonColumn($column, true);
+
+        $condition = "JSON_EXTRACT($cond, '$jsonCond') $operate $value";
+
+        if ($this->where === null) {
+            $this->where = $condition;
+        } else {
+            $this->where = ['and', $this->where, $condition];
+        }
+
+        return $this;
+    }
+
+    public function splitJsonColumn($column, $jsonColumn = false)
+    {
+        $columns = explode('.', $column);
+        $cond    = array_shift($columns);
+
+        if (count($columns) == 0) {
+            if ($jsonColumn == true) {
+                throw new InvalidArgumentException(get_class($this) . ' has no json column "' . $column . '".');
+            }
+            $jsonColumn == '';
+        } else {
+            array_unshift($columns, '$');
+            $jsonCond = implode('.', $columns);
+        }
+
+        return [$cond, $jsonCond];
     }
 }
