@@ -72,6 +72,18 @@ public function search()
 }
 ```
 
+### jsonSelect
+
+This func Support JSON_EXTRACT(json_doc, path) AS `xx` in query select;
+Column A multilevel field supporting JSON fields is segmented using '.';
+
+```
+public function search()
+{
+    YourModel::findJson()
+        ->jsonSelect(['content.en.content', 'content.en.text' => 'tt']])
+}
+```
 
 
 
