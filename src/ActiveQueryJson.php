@@ -7,6 +7,7 @@
  * @author   yangjin <imyangjin@vip.qq.com>
  * @license  PHP Version 7.1.x {@link http://www.php.net/license/3_0.txt}
  */
+
 namespace Imyangjin\Yii2MysqlJson;
 
 use yii\db\ActiveQuery;
@@ -38,6 +39,35 @@ class ActiveQueryJson extends ActiveQuery
         }
 
         $this->addParams($params);
+        return $this;
+    }
+
+    /**
+     * Add Select.
+     * This function must after select() if has.And This function only support json column；
+     *
+     * @param array $params
+     *              ["expand.gid" => 'id', "expand.orderno"]
+     *              eq. JSON_EXTRACT(expand, '$.gid') AS id, JSON_EXTRACT(expand, '$.orderno') AS orderno
+     * @return $this
+     */
+    public function jsonSelect(array $params)
+    {
+        $columns = [];
+        foreach ($params as $key => $value) {
+            if (is_numeric($key)) {
+                list($cont, $column) = $this->splitJsonColumn($value);
+                $valArr = explode('.', $value);
+                $as     = end($valArr);
+            } else {
+                list($cont, $column) = $this->splitJsonColumn($key);
+                $as = $value;
+            }
+
+            $columns[] = "JSON_EXTRACT($cont, '$column') AS $as";
+        }
+
+        $this->addSelect($columns);
         return $this;
     }
 
@@ -77,8 +107,8 @@ class ActiveQueryJson extends ActiveQuery
     /**
      * Support JSON_EXTRACT(json_doc, path[, path] ...) in query
      *
-     * @param string     $column A multilevel field supporting JSON fields is segmented using '.'
-     *                           example content.lang.en
+     * @param string     $column  A multilevel field supporting JSON fields is segmented using '.'
+     *                            example content.lang.en
      * @param string|int $value
      * @param string     $operate Query Operators，default '='
      *                            example support : >|>=|<|<=
